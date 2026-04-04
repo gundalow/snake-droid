@@ -49,22 +49,23 @@ jobs:
           generate_release_notes: true
           files: app/build/outputs/apk/release/app-release.apk
 
-      - name: Prepare Netlify Deployment
+      - name: Verify and Prepare Netlify Deployment
         run: |
-          mkdir deploy
-          cp app/build/outputs/apk/release/app-release.apk deploy/snake-game.apk
-          echo '<html><body><h1>Snake Game</h1><a href="snake-game.apk">Download APK</a></body></html>' > deploy/index.html
+          # Verify the APK exists and is valid
+          APK_PATH="app/build/outputs/apk/release/app-release.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "Error: APK not found at $APK_PATH"
+            exit 1
+          fi
 
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './deploy'
-          production-deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy APK to Netlify"
-          enable-pull-request-comment: true
-          enable-commit-comment: true
-          overriding-debug-mode: false
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          # Basic ZIP integrity check
+          unzip -t "$APK_PATH"
+
+          # Prepare the deployment directory
+          mkdir -p deploy
+          cp "$APK_PATH" deploy/snake-game.apk
+          echo '<html><body><h1>Snake Game</h1><p>Latest Build</p><a href="snake-game.apk">Download APK</a></body></html>' > deploy/index.html
+
+          # List the files to confirm
+          ls -R deploy/
+

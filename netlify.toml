@@ -1,0 +1,9 @@
+[build]
+  publish = "deploy"
+  command = "./gradlew assembleRelease"
+
+[context.production]
+  publish = "deploy"
+
+[context.deploy-preview]
+  publish = "deploy"
