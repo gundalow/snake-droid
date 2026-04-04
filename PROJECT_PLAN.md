@@ -28,23 +28,32 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 - [X] **Food and Items**:
   - [X] Normal Food: Spawns at random valid grid positions (not overlapping with snake).
   - [X] Effect: Increases score by 1, adds 1 segment, and increases speed.
-- [ ] **Mega-Melon**: (Not implemented in basic version)
-  - [ ] Multi-Bite: Requires 3 bites.
+- [ ] **Mega-Melon**:
+  - [ ] Multi-Bite: Requires 3 bites to be fully consumed. Each bite adds segment and score.
+  - [ ] Scale Progression: Model scales down after each bite.
   - [ ] Slow-Down Effect: Speed reduced by 50% during consumption.
-- [ ] **Hazards and Events**: (Not implemented in basic version)
-  - [ ] Galactic Greed (UFO): Abducts food and penalizes score.
-  - [ ] Tectonic Tussle (World-Stomper): Screen shake and food relocation.
+  - [ ] Burp Delay: 0.5s delay and "burp" sound after final bite.
+- [ ] **Hazards and Events**:
+  - [ ] Galactic Greed (UFO): Appears every 30s, targets food, abducts it. Penalty: -5 points.
+  - [ ] Tectonic Tussle (World-Stomper): giant foot appears every 30s, causes screen shake and relocates food.
 
-## 4. Death Conditions
+## 4. Meta-Systems
+- [ ] **Achievement System**: triggered based on score milestones or food counts (e.g. 10, 20, 30, 50 apples).
+- [ ] **Leaderboard and Persistence**:
+  - [ ] Name Selection: Players can enter/select name at start.
+  - [ ] Data Storage: High scores stored in JSON file.
+  - [ ] Display: Top 10 scores on game over screen.
+
+## 5. Death Conditions
 - [X] **Wall Collision**: The game ends if the snake's head collides with the boundary walls.
 - [X] **Self-Collision**: The game ends if the snake's head collides with any of its own body segments.
 - [X] **Invulnerability**: The snake has a 0.5s window of invulnerability at the start.
 
-## 5. Controls (Android Adaptation)
+## 6. Controls (Android Adaptation)
 - [X] **Swipe Gestures**: North, South, East, West directional control via on-screen swipes.
 - [X] **Restart**: Button on the Game Over screen.
 
-## 6. Technical Constants
+## 7. Technical Constants
 | Constant | Value | Status |
 | :--- | :--- | :--- |
 | `HISTORY_RESOLUTION` | 0.1 | [X] |
@@ -56,11 +65,11 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 | `BOARD_SIZE` | 28.0 | [X] |
 | `WALL_DISTANCE` | 14.0 | [X] |
 
-## 7. Assets
+## 8. Assets
 - [X] **Audio**: `whoosh.wav` (Spawn) and `apple.ogg` (Eat).
 - [X] **Placeholders**: 2D Circles/Rectangles for snake and food.
 
-## 8. CI & Testing
+## 9. CI & Testing
 - [X] **Unit Tests**:
   - `SnakeGameEngineTest`: Verifies movement logic, grid-snapping, food consumption, and collision detection.
 - [ ] **Static Analysis**: (Recommended)

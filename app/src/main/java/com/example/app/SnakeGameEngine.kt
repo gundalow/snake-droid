@@ -20,13 +20,16 @@ class SnakeGameEngine {
     private var distanceTraveledSinceLastHistoryPoint = 0f
     private var accumulatedTime = 0f
     private var invulnerabilityTimer = 0f
+    private var ufoTimer = 0f
+    private var stomperTimer = 0f
+    private var burpDelayTimer = 0f
 
     init {
         resetGame()
     }
 
-    fun resetGame() {
-        _gameState.value = GameState()
+    fun resetGame(playerName: String = "Snake") {
+        _gameState.value = GameState(playerName = playerName)
         currentDirection = Direction.NORTH
         nextRequestedDirection = null
         history.clear()
@@ -34,6 +37,9 @@ class SnakeGameEngine {
         distanceTraveledSinceLastHistoryPoint = 0f
         accumulatedTime = 0f
         invulnerabilityTimer = GameConstants.INVULNERABILITY_TIME
+        ufoTimer = GameConstants.UFO_SPAWN_INTERVAL
+        stomperTimer = GameConstants.STOMPER_INTERVAL
+        burpDelayTimer = 0f
         spawnFood()
     }
 
@@ -50,7 +56,21 @@ class SnakeGameEngine {
             invulnerabilityTimer -= deltaTimeSeconds
         }
 
-        val moveSpeed = _gameState.value.moveSpeed
+        if (burpDelayTimer > 0) {
+            burpDelayTimer -= deltaTimeSeconds
+            if (burpDelayTimer <= 0) {
+                onBurp()
+                _gameState.update { it.copy(isSlowedDown = false) }
+                spawnFood()
+            }
+            return
+        }
+
+        updateHazards(deltaTimeSeconds)
+
+        val baseSpeed = _gameState.value.moveSpeed
+        val multiplier = if (_gameState.value.isSlowedDown) GameConstants.MEGA_FOOD_SPEED_MULT else 1.0f
+        val moveSpeed = baseSpeed * multiplier
         val distanceToMove = moveSpeed * deltaTimeSeconds
 
         var remainingDistance = distanceToMove
@@ -125,24 +145,34 @@ class SnakeGameEngine {
 
 
     private fun spawnFood() {
+        val nextIsMega = (_gameState.value.foodCount + 1) % 5 == 0
         var valid = false
         var newFood = Offset(0f, 0f)
         while (!valid) {
             newFood = Offset(
-                Random.nextInt(-GameConstants.WALL_DISTANCE.toInt(), GameConstants.WALL_DISTANCE.toInt()).toFloat(),
-                Random.nextInt(-GameConstants.WALL_DISTANCE.toInt(), GameConstants.WALL_DISTANCE.toInt()).toFloat()
+                Random.nextInt(-GameConstants.WALL_DISTANCE.toInt() + 1, GameConstants.WALL_DISTANCE.toInt() - 1).toFloat(),
+                Random.nextInt(-GameConstants.WALL_DISTANCE.toInt() + 1, GameConstants.WALL_DISTANCE.toInt() - 1).toFloat()
             )
             valid = true
             if ((_gameState.value.snakeHead - newFood).getDistance() < 2f) valid = false
             _gameState.value.bodySegments.forEach { if ((it - newFood).getDistance() < 1f) valid = false }
         }
-        _gameState.update { it.copy(foodPosition = newFood) }
+        _gameState.update { it.copy(
+            foodPosition = newFood,
+            foodType = if (nextIsMega) FoodType.MEGA else FoodType.NORMAL,
+            megaBitesLeft = if (nextIsMega) GameConstants.MEGA_FOOD_BITES else 0
+        ) }
         onFoodSpawned?.invoke()
     }
 
     var onFoodEaten: (() -> Unit)? = null
     var onFoodSpawned: (() -> Unit)? = null
     var onGameOver: (() -> Unit)? = null
+    var onUfoSteal: (() -> Unit)? = null
+    var onStomp: (() -> Unit)? = null
+    var onBurp: () -> Unit = {}
+    var onMegaBite: () -> Unit = {}
+    var onAchievement: (String) -> Unit = {}
 
     private fun checkCollisions() {
         val head = _gameState.value.snakeHead
@@ -158,12 +188,18 @@ class SnakeGameEngine {
         // Food collision (simple distance check)
         val foodPos = _gameState.value.foodPosition
         if ((head - foodPos).getDistance() < 0.8f) {
-            _gameState.update { it.copy(
-                score = it.score + 1,
-                moveSpeed = it.moveSpeed + GameConstants.SPEED_INCREMENT
-            ) }
-            onFoodEaten?.invoke()
-            spawnFood()
+            if (_gameState.value.foodType == FoodType.MEGA) {
+                handleMegaBite()
+            } else {
+                _gameState.update { it.copy(
+                    score = it.score + 1,
+                    foodCount = it.foodCount + 1,
+                    moveSpeed = it.moveSpeed + GameConstants.SPEED_INCREMENT
+                ) }
+                checkAchievements()
+                onFoodEaten?.invoke()
+                spawnFood()
+            }
         }
 
         // Self-collision
@@ -176,5 +212,79 @@ class SnakeGameEngine {
                 }
             }
         }
+    }
+
+    private fun handleMegaBite() {
+        val bitesLeft = _gameState.value.megaBitesLeft - 1
+        _gameState.update { it.copy(
+            score = it.score + 1,
+            megaBitesLeft = bitesLeft,
+            isSlowedDown = true
+        ) }
+        onMegaBite?.invoke()
+        if (bitesLeft <= 0) {
+            _gameState.update { it.copy(foodCount = it.foodCount + 1) }
+            checkAchievements()
+            burpDelayTimer = 0.5f
+        }
+    }
+
+    private fun checkAchievements() {
+        val score = _gameState.value.score
+        val count = _gameState.value.foodCount
+        var achievement: String? = null
+        if (score % 10 == 0 && score > 0) achievement = "Score $score! Sssensational!"
+        if (count == 10) achievement = "10 Apples! Fruit Loop!"
+        if (count == 20) achievement = "20 Apples! Core Strength!"
+
+        achievement?.let {
+            _gameState.update { s -> s.copy(achievement = it) }
+            onAchievement(it)
+        }
+    }
+
+    private fun updateHazards(dt: Float) {
+        // UFO logic
+        ufoTimer -= dt
+        if (ufoTimer <= 0) {
+            if (_gameState.value.ufoPosition == null) {
+                // Spawn UFO at edge
+                _gameState.update { it.copy(ufoPosition = Offset(-15f, -15f)) }
+            } else {
+                val ufoPos = _gameState.value.ufoPosition!!
+                val target = _gameState.value.foodPosition
+                val dir = (target - ufoPos)
+                if (dir.getDistance() < 0.5f) {
+                    // Abduct
+                    _gameState.update { it.copy(
+                        ufoPosition = null,
+                        score = maxOf(0, it.score - GameConstants.UFO_SCORE_PENALTY)
+                    ) }
+                    onUfoSteal?.invoke()
+                    spawnFood()
+                    ufoTimer = GameConstants.UFO_SPAWN_INTERVAL
+                } else {
+                    val move = dir / dir.getDistance() * GameConstants.UFO_SPEED * dt
+                    _gameState.update { it.copy(ufoPosition = ufoPos + move) }
+                }
+            }
+        }
+
+        // Stomper logic
+        stomperTimer -= dt
+        if (stomperTimer <= 0) {
+            stomperTimer = GameConstants.STOMPER_INTERVAL
+            onStomp?.invoke()
+            _gameState.update { it.copy(screenShake = 1.0f) }
+            relocateFood()
+        }
+
+        if (_gameState.value.screenShake > 0) {
+            _gameState.update { it.copy(screenShake = maxOf(0f, it.screenShake - dt * 2f)) }
+        }
+    }
+
+    private fun relocateFood() {
+        spawnFood()
     }
 }

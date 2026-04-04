@@ -22,6 +22,10 @@ class SoundManager(context: Context) {
         loadSound(context, "whoosh", "sounds/whoosh.wav")
         loadSound(context, "apple", "sounds/foods/apple.ogg")
         loadSound(context, "game_over", "sounds/game_over.wav")
+        loadSound(context, "chew", "sounds/foods/mega_melon/chew.ogg")
+        loadSound(context, "burp1", "sounds/foods/mega_burps/burp1.ogg")
+        loadSound(context, "burp2", "sounds/foods/mega_burps/burp2.ogg")
+        loadSound(context, "burp3", "sounds/foods/mega_burps/burp3.ogg")
     }
 
     private fun loadSound(context: Context, key: String, assetPath: String) {

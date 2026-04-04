@@ -1,12 +1,11 @@
 package com.example.app.ui
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,25 +13,46 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.app.*
 import kotlinx.coroutines.delay
 import kotlin.math.abs
+import kotlin.random.Random
 
 @Composable
 fun SnakeGameView(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val soundManager = remember { SoundManager(context) }
+    val leaderboardManager = remember { LeaderboardManager(context) }
+
+    var playerName by remember { mutableStateOf("Snake") }
+    var showNameEntry by remember { mutableStateOf(true) }
+    var lastAchievement by remember { mutableStateOf<String?>(null) }
+
     val engine = remember {
         SnakeGameEngine().apply {
             onFoodEaten = { soundManager.playSound("apple") }
             onFoodSpawned = { soundManager.playSound("whoosh") }
-            onGameOver = { soundManager.playSound("game_over") }
+            onGameOver = {
+                soundManager.playSound("game_over")
+                leaderboardManager.saveScore(gameState.value.playerName, gameState.value.score)
+            }
+            onMegaBite = { soundManager.playSound("chew") }
+            onBurp = { soundManager.playSound("burp${Random.nextInt(1, 4)}") }
+            onAchievement = { lastAchievement = it }
         }
     }
     val gameState by engine.gameState.collectAsState()
+
+    LaunchedEffect(lastAchievement) {
+        if (lastAchievement != null) {
+            delay(3000)
+            lastAchievement = null
+        }
+    }
 
     var dragAccumulatorX by remember { mutableStateOf(0f) }
     var dragAccumulatorY by remember { mutableStateOf(0f) }
@@ -60,6 +80,10 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
+            .graphicsLayer {
+                translationX = (Random.nextFloat() - 0.5f) * gameState.screenShake * 50f
+                translationY = (Random.nextFloat() - 0.5f) * gameState.screenShake * 50f
+            }
             .background(Color(0xFF1B5E20)) // Dark green for garden
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -109,11 +133,34 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
 
             // Draw Food
             val foodPos = worldToCanvas(gameState.foodPosition)
+            val foodColor = if (gameState.foodType == FoodType.MEGA) Color.Magenta else Color.Red
+            val foodRadius = if (gameState.foodType == FoodType.MEGA) {
+                (0.4f + (gameState.megaBitesLeft * 0.2f)) * boardScale
+            } else {
+                0.4f * boardScale
+            }
             drawCircle(
-                color = Color.Red,
-                radius = 0.4f * boardScale,
+                color = foodColor,
+                radius = foodRadius,
                 center = foodPos
             )
+
+            // Draw UFO
+            gameState.ufoPosition?.let { ufoWorldPos ->
+                val ufoPos = worldToCanvas(ufoWorldPos)
+                drawCircle(
+                    color = Color.Gray,
+                    radius = 0.8f * boardScale,
+                    center = ufoPos
+                )
+                // Tractor Beam
+                drawLine(
+                    color = Color.Cyan.copy(alpha = 0.5f),
+                    start = ufoPos,
+                    end = worldToCanvas(gameState.foodPosition),
+                    strokeWidth = 5f
+                )
+            }
 
             // Draw Snake Body
             gameState.bodySegments.forEach { segment ->
@@ -141,10 +188,47 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Score: ${gameState.score}",
+                text = "${gameState.playerName}: ${gameState.score}",
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.White
             )
+        }
+
+        // Achievement Toast
+        AnimatedVisibility(
+            visible = lastAchievement != null,
+            enter = slideInVertically() + fadeIn(),
+            exit = slideOutVertically() + fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 64.dp)
+        ) {
+            Card(colors = CardDefaults.cardColors(containerColor = Color.Yellow)) {
+                Text(
+                    text = lastAchievement ?: "",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Black
+                )
+            }
+        }
+
+        if (showNameEntry) {
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.Black.copy(alpha = 0.8f)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Text("Enter Name", style = MaterialTheme.typography.headlineMedium, color = Color.White)
+                    TextField(value = playerName, onValueChange = { playerName = it })
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = {
+                        showNameEntry = false
+                        engine.resetGame(playerName)
+                    }) {
+                        Text("START GAME")
+                    }
+                }
+            }
         }
 
         if (gameState.isGameOver) {
@@ -165,8 +249,18 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Leaderboard", style = MaterialTheme.typography.titleLarge, color = Color.Yellow)
+                leaderboardManager.getTopScores().forEach { entry ->
+                    Text("${entry.name}: ${entry.score}", color = Color.White)
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = { engine.resetGame() }) {
+                Button(onClick = {
+                    showNameEntry = true
+                    engine.resetGame(playerName)
+                }) {
                     Text("RESTART")
                 }
             }
