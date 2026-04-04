@@ -59,10 +59,10 @@ jobs:
         uses: nwtgck/actions-netlify@v3.0
         with:
           publish-dir: './deploy'
-          production-deploy: true
+          production-deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy APK to Netlify"
-          enable-pull-request-comment: false
+          enable-pull-request-comment: true
           enable-commit-comment: true
           overriding-debug-mode: false
         env:
