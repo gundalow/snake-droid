@@ -137,12 +137,12 @@ class SnakeGameEngine {
             _gameState.value.bodySegments.forEach { if ((it - newFood).getDistance() < 1f) valid = false }
         }
         _gameState.update { it.copy(foodPosition = newFood) }
-        onFoodSpawned()
+        onFoodSpawned?.invoke()
     }
 
-    var onFoodEaten: () -> Unit = {}
-    var onFoodSpawned: () -> Unit = {}
-    var onGameOver: () -> Unit = {}
+    var onFoodEaten: (() -> Unit)? = null
+    var onFoodSpawned: (() -> Unit)? = null
+    var onGameOver: (() -> Unit)? = null
 
     private fun checkCollisions() {
         val head = _gameState.value.snakeHead
@@ -151,7 +151,7 @@ class SnakeGameEngine {
         if (head.x < -GameConstants.WALL_DISTANCE || head.x > GameConstants.WALL_DISTANCE ||
             head.y < -GameConstants.WALL_DISTANCE || head.y > GameConstants.WALL_DISTANCE) {
             _gameState.update { it.copy(isGameOver = true) }
-            onGameOver()
+            onGameOver?.invoke()
             return
         }
 
@@ -162,7 +162,7 @@ class SnakeGameEngine {
                 score = it.score + 1,
                 moveSpeed = it.moveSpeed + GameConstants.SPEED_INCREMENT
             ) }
-            onFoodEaten()
+            onFoodEaten?.invoke()
             spawnFood()
         }
 
@@ -171,7 +171,7 @@ class SnakeGameEngine {
             _gameState.value.bodySegments.forEach { segment ->
                 if ((head - segment).getDistance() < 0.5f) {
                     _gameState.update { it.copy(isGameOver = true) }
-                    onGameOver()
+                    onGameOver?.invoke()
                     return@forEach
                 }
             }
