@@ -9,15 +9,17 @@ class SoundManager(context: Context) {
     private val soundMap = mutableMapOf<String, Int>()
 
     init {
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
+        val audioAttributes =
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
 
-        soundPool = SoundPool.Builder()
-            .setMaxStreams(5)
-            .setAudioAttributes(audioAttributes)
-            .build()
+        soundPool =
+            SoundPool.Builder()
+                .setMaxStreams(5)
+                .setAudioAttributes(audioAttributes)
+                .build()
 
         loadSound(context, "whoosh", "sounds/whoosh.wav")
         loadSound(context, "apple", "sounds/foods/apple.ogg")
@@ -26,15 +28,22 @@ class SoundManager(context: Context) {
         loadSound(context, "burp1", "sounds/foods/mega_burps/burp1.ogg")
         loadSound(context, "burp2", "sounds/foods/mega_burps/burp2.ogg")
         loadSound(context, "burp3", "sounds/foods/mega_burps/burp3.ogg")
+        loadSound(context, "impact", "sounds/impact.wav")
+        loadSound(context, "tractor_beam", "sounds/tractor_beam.wav")
     }
 
-    private fun loadSound(context: Context, key: String, assetPath: String) {
+    private fun loadSound(
+        context: Context,
+        key: String,
+        assetPath: String,
+    ) {
         try {
             val assetFileDescriptor = context.assets.openFd(assetPath)
-            val soundId = soundPool.load(assetFileDescriptor, 1)
+            val priority = 1
+            val soundId = soundPool.load(assetFileDescriptor, priority)
             soundMap[key] = soundId
         } catch (e: Exception) {
-            e.printStackTrace()
+            // Log error
         }
     }
 

@@ -10,10 +10,14 @@ class LeaderboardManager(context: Context) {
     private val prefs = context.getSharedPreferences("leaderboard", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    fun saveScore(name: String, score: Int) {
+    fun saveScore(
+        name: String,
+        score: Int,
+    ) {
         val scores = getTopScores().toMutableList()
         scores.add(ScoreEntry(name, score))
-        val sorted = scores.sortedByDescending { it.score }.take(10)
+        val limit = 10
+        val sorted = scores.sortedByDescending { it.score }.take(limit)
         prefs.edit().putString("scores", gson.toJson(sorted)).apply()
     }
 

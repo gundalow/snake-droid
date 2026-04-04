@@ -10,11 +10,12 @@ import org.junit.Test
 
 class MainViewModelTest {
     @Test
-    fun `greetingMessage is initially the string from resources`() = runBlocking {
-        val application = mockk<Application>()
-        every { application.getString(R.string.hello_message) } returns "Hello"
+    fun `greetingMessage is initially the string from resources`() =
+        runBlocking {
+            val application = mockk<Application>()
+            every { application.getString(R.string.hello_message) } returns "Hello"
 
-        val viewModel = MainViewModel(application)
-        assertEquals("Hello", viewModel.greetingMessage.first())
-    }
+            val viewModel = MainViewModel(application)
+            assertEquals("Hello", viewModel.greetingMessage.first())
+        }
 }

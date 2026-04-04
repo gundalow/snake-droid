@@ -6,6 +6,11 @@ plugins {
     alias(libs.plugins.io.gitlab.arturbosch.detekt)
 }
 
+detekt {
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+}
+
 android {
     namespace = "com.example.app"
     compileSdk = 35
@@ -27,7 +32,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

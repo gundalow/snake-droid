@@ -1,0 +1,33 @@
+complexity:
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 30
+    thresholdInClasses: 30
+    thresholdInInterfaces: 30
+    thresholdInObjects: 30
+    thresholdInEnums: 30
+  LongMethod:
+    active: true
+    threshold: 150
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 50
+  ComplexCondition:
+    active: true
+    threshold: 10
+
+naming:
+  FunctionNaming:
+    active: false
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  SwallowedException:
+    active: false
