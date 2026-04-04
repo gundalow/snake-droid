@@ -62,8 +62,8 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 | `INITIAL_MOVE_SPEED` | 5.0 | [X] |
 | `SPEED_INCREMENT` | 0.2 | [X] |
 | `INVULNERABILITY_TIME`| 0.5s | [X] |
-| `BOARD_SIZE` | 28.0 | [X] |
-| `WALL_DISTANCE` | 14.0 | [X] |
+| `BOARD_SIZE` | 31.0 | [X] |
+| `WALL_DISTANCE` | 15.5 | [X] |
 
 ## 8. Assets
 - [X] **Audio**: `whoosh.wav` (Spawn) and `apple.ogg` (Eat).
