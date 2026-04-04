@@ -1,2 +1,3 @@
-# android-app
-Bare bones Android app and gradle.
+# Example App
+
+This is a simple Android application that displays 'Hello'.
