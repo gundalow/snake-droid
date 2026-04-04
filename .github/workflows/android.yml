@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -78,7 +79,6 @@ jobs:
           deploy-message: "Deploy APK to Netlify"
           enable-pull-request-comment: true
           enable-commit-comment: true
-          overriding-debug-mode: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
