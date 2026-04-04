@@ -28,21 +28,21 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 - [X] **Food and Items**:
   - [X] Normal Food: Spawns at random valid grid positions (not overlapping with snake).
   - [X] Effect: Increases score by 1, adds 1 segment, and increases speed.
-- [ ] **Mega-Melon**:
-  - [ ] Multi-Bite: Requires 3 bites to be fully consumed. Each bite adds segment and score.
-  - [ ] Scale Progression: Model scales down after each bite.
-  - [ ] Slow-Down Effect: Speed reduced by 50% during consumption.
-  - [ ] Burp Delay: 0.5s delay and "burp" sound after final bite.
-- [ ] **Hazards and Events**:
-  - [ ] Galactic Greed (UFO): Appears every 30s, targets food, abducts it. Penalty: -5 points.
-  - [ ] Tectonic Tussle (World-Stomper): giant foot appears every 30s, causes screen shake and relocates food.
+- [X] **Mega-Melon**:
+  - [X] Multi-Bite: Requires 3 bites to be fully consumed. Each bite adds segment and score.
+  - [X] Scale Progression: Model scales down after each bite.
+  - [X] Slow-Down Effect: Speed reduced by 50% during consumption.
+  - [X] Burp Delay: 0.5s delay and "burp" sound after final bite.
+- [X] **Hazards and Events**:
+  - [X] Galactic Greed (UFO): Appears every 30s, targets food, abducts it. Penalty: -5 points.
+  - [X] Tectonic Tussle (World-Stomper): giant foot appears every 30s, causes screen shake and relocates food.
 
 ## 4. Meta-Systems
-- [ ] **Achievement System**: triggered based on score milestones or food counts (e.g. 10, 20, 30, 50 apples).
-- [ ] **Leaderboard and Persistence**:
-  - [ ] Name Selection: Players can enter/select name at start.
-  - [ ] Data Storage: High scores stored in JSON file.
-  - [ ] Display: Top 10 scores on game over screen.
+- [X] **Achievement System**: triggered based on score milestones or food counts (e.g. 10, 20, 30, 50 apples).
+- [X] **Leaderboard and Persistence**:
+  - [X] Name Selection: Players can enter/select name at start.
+  - [X] Data Storage: High scores stored in JSON file.
+  - [X] Display: Top 10 scores on game over screen.
 
 ## 5. Death Conditions
 - [X] **Wall Collision**: The game ends if the snake's head collides with the boundary walls.
@@ -72,8 +72,8 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 ## 9. CI & Testing
 - [X] **Unit Tests**:
   - `SnakeGameEngineTest`: Verifies movement logic, grid-snapping, food consumption, and collision detection.
-- [ ] **Static Analysis**: (Recommended)
+- [X] **Static Analysis**:
   - Integration of `ktlint` for Kotlin code style.
   - Integration of `detekt` for static analysis.
-- [ ] **UI Testing**: (Recommended)
-  - Compose UI tests to verify gesture detection and game over screen visibility.
+- [X] **UI Testing**:
+  - `SnakeGameUiTest`: Basic Compose UI tests to verify name entry and game initialization.
