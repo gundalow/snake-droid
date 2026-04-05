@@ -1,21 +1,22 @@
 package dev.gundalow.snake
 
+import korlibs.event.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.*
+import korlibs.korge.input.*
 import korlibs.korge.scene.*
+import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.image.color.*
-import korlibs.image.bitmap.*
 import korlibs.time.*
-import korlibs.event.*
-import korlibs.korge.input.*
-import korlibs.korge.tween.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
-suspend fun main() = Korge(windowSize = Size(1280, 720), backgroundColor = Colors["#0a0a14"]) {
-    sceneContainer().changeTo({ GameScene() })
-}
+suspend fun main() =
+    Korge(windowSize = Size(1280, 720), backgroundColor = Colors["#0a0a14"]) {
+        sceneContainer().changeTo({ GameScene() })
+    }
 
 class RobotSnake(val container: Container) {
     val head: View
@@ -45,7 +46,7 @@ class RobotSnake(val container: Container) {
                     val angle = atan2(dy, dx)
                     seg.xy(
                         prevPos.x + cos(angle) * segmentDistance,
-                        prevPos.y + sin(angle) * segmentDistance
+                        prevPos.y + sin(angle) * segmentDistance,
                     )
                 }
                 prevPos = seg.pos
@@ -60,10 +61,11 @@ class RobotSnake(val container: Container) {
 
 class GameScene : Scene() {
     override suspend fun SContainer.sceneMain() {
-        val bgBitmap = Bitmap32(64, 64) { x, y ->
-            val v = (x + y) % 2 * 5 + 15
-            Colors["#0a0a14"].withR(v).withG(v).withB(v)
-        }
+        val bgBitmap =
+            Bitmap32(64, 64) { x, y ->
+                val v = (x + y) % 2 * 5 + 15
+                Colors["#0a0a14"].withR(v).withG(v).withB(v)
+            }
         container {
             for (x in 0 until 20) {
                 for (y in 0 until 12) {

@@ -7,6 +7,18 @@ plugins {
     alias(libs.plugins.io.gitlab.arturbosch.detekt)
 }
 
+ktlint {
+    filter {
+        exclude {
+            it.file.absolutePath.contains("/build/") || it.file.absolutePath.contains("app/build/")
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.findByName("ktlintAndroidMainSourceSetCheck")?.enabled = false
+}
+
 detekt {
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true

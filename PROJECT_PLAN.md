@@ -11,22 +11,21 @@ This document tracks the migration and evolution of the Snake game from Jetpack 
 ## 2. Physics-Based Mechanics (KBox2D)
 - [X] **World Initialization**: Box2D world with zero gravity.
 - [X] **Mechanical Snake**:
-    - [X] Physical head (CircleShape with high density).
-    - [X] Segmented cable body (10 segments) connected via `DistanceJoint`s.
-    - [X] Organic dragging weight using `linearDamping = 2.0`.
-- [X] **Force-Based Control**: Snake movement handled by applying impulses/forces to the head.
-- [X] **Destructible Obstacles**:
-    - [X] Wooden crates with dynamic physics.
-    - [X] High-velocity impact detection that shatters crates into splinters.
+    - [X] Momentum-based head with custom acceleration and friction.
+    - [X] Segmented cable body (10 segments) with distance-constrained follow logic.
+- [ ] **Force-Based Control**: Snake movement handled by applying impulses/forces to the head. (Iterating for stability)
+- [ ] **Destructible Obstacles**: (Iterating for stability)
+    - [ ] Wooden crates with dynamic physics.
+    - [ ] High-velocity impact detection that shatters crates into splinters.
 
 ## 3. Graphics & "Juice"
 - [X] **2.5D Perspective**: Simulated depth for walls and crates.
-- [X] **Collision Feedback**:
-    - [X] Orange spark particles on wall impacts.
-    - [X] Momentary scale/tint feedback on snake head damage.
-- [X] **Energy Battery (Food)**:
-    - [X] Spawning logic for Cyan batteries.
-    - [X] "Energy ripple" effect upon collection.
+- [ ] **Collision Feedback**: (Iterating for stability)
+    - [ ] Orange spark particles on wall impacts.
+    - [ ] Momentary scale/tint feedback on snake head damage.
+- [ ] **Energy Battery (Food)**: (Iterating for stability)
+    - [ ] Spawning logic for Cyan batteries.
+    - [ ] "Energy ripple" effect upon collection.
 
 ## 4. Future Work
 - [ ] **Real-time Lighting**: Implement PointLight for head/batteries and Navy Blue ambient light.
