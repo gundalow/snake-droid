@@ -7,7 +7,7 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 - [X] **Board**: A flat 2D plane (the garden) surrounded by boundaries (fences).
 - [X] **Coordinate System**:
   - **Playable Area**: Centered at (0, 0).
-  - **Boundaries**: Walls are placed at a distance of 14.0 units from the center (total 28x28 area).
+  - **Boundaries**: Walls are placed at a distance of 15.5 units from the center (total 31x31 area).
   - **View**: Top-down 2D.
 
 ## 2. Snake Mechanics
@@ -66,7 +66,7 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
 | `WALL_DISTANCE` | 15.5 | [X] |
 
 ## 8. Assets
-- [X] **Audio**: `whoosh.wav` (Spawn) and `apple.ogg` (Eat).
+- [X] **Audio**: `whoosh.wav`, `apple.ogg`, `chew.ogg`, `burp1-3.ogg`, `impact.wav`, `tractor_beam.wav`.
 - [X] **Placeholders**: 2D Circles/Rectangles for snake and food.
 
 ## 9. CI & Testing
@@ -77,3 +77,20 @@ This document tracks the implementation of the 3D Snake game mechanics into an A
   - Integration of `detekt` for static analysis.
 - [X] **UI Testing**:
   - `SnakeGameUiTest`: Basic Compose UI tests to verify name entry and game initialization.
+
+## 10. Phase 2: Retro Arcade Visual Overhaul (PLANNED)
+- [ ] **Aesthetic**: "Cyber-Retro" neon arcade vibe. Dark background with vibrant glowing elements.
+- [ ] **Perspective**: Faux-3D using stacking layers and drop shadows to simulate depth.
+- [ ] **Snake Overhaul**:
+    - Replace basic squares with neon-bordered rounded rects or custom SVGs.
+    - Add "tail-tapering" and "head-glow".
+    - Segment connection lines with "pulse" effect.
+- [ ] **Food Overhaul**:
+    - Sprite-based or complex vector food (Apples/Melons) with neon highlights.
+    - "Floating" animation (sine-wave vertical movement).
+- [ ] **Environment**:
+    - Grid lines with perspective/scanline effects.
+    - CRT-flicker or subtle noise overlay.
+- [ ] **Hazards**:
+    - UFO: Saucer with rotating lights and tractor beam gradient.
+    - Stomper: More detailed "Robot Foot" with mechanical details and ground impact debris particles.
