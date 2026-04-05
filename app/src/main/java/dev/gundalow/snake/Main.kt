@@ -1,17 +1,29 @@
 package dev.gundalow.snake
 
-import korlibs.event.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.korge.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
-import korlibs.math.geom.*
-import korlibs.time.*
-import kotlinx.coroutines.*
-import kotlin.math.*
+import korlibs.event.Key
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.color.Colors
+import korlibs.korge.Korge
+import korlibs.korge.input.keys
+import korlibs.korge.scene.Scene
+import korlibs.korge.scene.sceneContainer
+import korlibs.korge.view.Container
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.View
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.circle
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.xy
+import korlibs.math.geom.Rectangle
+import korlibs.math.geom.Size
+import korlibs.math.geom.Vector2D
+import korlibs.time.TimeSpan
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 suspend fun main() =
     Korge(windowSize = Size(1280, 720), backgroundColor = Colors["#0a0a14"]) {
@@ -33,7 +45,7 @@ class RobotSnake(val container: Container) {
             segments.add(seg)
         }
 
-        container.addUpdater {
+        container.addUpdater { _: TimeSpan ->
             velocity *= friction
             head.xy(head.x + velocity.x, head.y + velocity.y)
 

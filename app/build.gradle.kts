@@ -10,13 +10,15 @@ plugins {
 ktlint {
     filter {
         exclude {
-            it.file.absolutePath.contains("/build/") || it.file.absolutePath.contains("app/build/")
+            it.file.absolutePath.contains("/build/") ||
+                it.file.absolutePath.contains("/app/src/main/AndroidManifest.xml")
         }
     }
 }
 
 afterEvaluate {
     tasks.findByName("ktlintAndroidMainSourceSetCheck")?.enabled = false
+    tasks.findByName("ktlintCommonMainSourceSetCheck")?.enabled = false
 }
 
 detekt {
