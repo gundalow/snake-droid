@@ -1,4 +1,4 @@
-package com.example.app.ui
+package dev.gundalow.snake.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -45,13 +45,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.app.Direction
-import com.example.app.FoodType
-import com.example.app.GameConstants
-import com.example.app.GameState
-import com.example.app.LeaderboardManager
-import com.example.app.SnakeGameEngine
-import com.example.app.SoundManager
+import dev.gundalow.snake.Direction
+import dev.gundalow.snake.FoodType
+import dev.gundalow.snake.GameConstants
+import dev.gundalow.snake.GameState
+import dev.gundalow.snake.LeaderboardManager
+import dev.gundalow.snake.SnakeGameEngine
+import dev.gundalow.snake.SoundManager
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.random.Random

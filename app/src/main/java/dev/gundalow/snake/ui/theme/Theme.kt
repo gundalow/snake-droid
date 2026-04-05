@@ -1,4 +1,4 @@
-package com.example.app.ui.theme
+package dev.gundalow.snake.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -34,7 +34,7 @@ private val LightColorScheme =
     )
 
 @Composable
-fun ExampleAppTheme(
+fun SnakeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

@@ -1,4 +1,4 @@
-package com.example.app
+package dev.gundalow.snake
 
 import android.app.Application
 import io.mockk.every

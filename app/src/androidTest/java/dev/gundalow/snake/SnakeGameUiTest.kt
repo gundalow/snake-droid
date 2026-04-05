@@ -1,11 +1,11 @@
-package com.example.app
+package dev.gundalow.snake
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.example.app.ui.SnakeGameView
-import com.example.app.ui.theme.ExampleAppTheme
+import dev.gundalow.snake.ui.SnakeGameView
+import dev.gundalow.snake.ui.theme.SnakeTheme
 import org.junit.Rule
 import org.junit.Test
 
@@ -16,7 +16,7 @@ class SnakeGameUiTest {
     @Test
     fun testNameEntryAndGameStart() {
         composeTestRule.setContent {
-            ExampleAppTheme {
+            SnakeTheme {
                 SnakeGameView()
             }
         }

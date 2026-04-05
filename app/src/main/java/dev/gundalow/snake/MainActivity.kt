@@ -1,4 +1,4 @@
-package com.example.app
+package dev.gundalow.snake
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,15 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.example.app.ui.SnakeGameView
-import com.example.app.ui.theme.ExampleAppTheme
+import dev.gundalow.snake.ui.SnakeGameView
+import dev.gundalow.snake.ui.theme.SnakeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ExampleAppTheme {
+            SnakeTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) { innerPadding ->

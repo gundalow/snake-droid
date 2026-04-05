@@ -1,4 +1,4 @@
-package com.example.app
+package dev.gundalow.snake
 
 import androidx.compose.ui.geometry.Offset
 

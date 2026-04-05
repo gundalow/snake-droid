@@ -1,4 +1,4 @@
-package com.example.app
+package dev.gundalow.snake
 
 import android.content.Context
 import com.google.gson.Gson
