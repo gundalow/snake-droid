@@ -1,16 +1,45 @@
 package dev.gundalow.snake
 
-import korlibs.event.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.kbox2d.*
-import korlibs.korge.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
-import korlibs.math.geom.*
-import korlibs.time.*
-import kotlin.random.*
+import korlibs.event.Contact
+import korlibs.event.ContactImpulse
+import korlibs.event.ContactListener
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.color.Colors
+import korlibs.kbox2d.Body
+import korlibs.kbox2d.BodyDef
+import korlibs.kbox2d.BodyType
+import korlibs.kbox2d.BoxShape
+import korlibs.kbox2d.FixtureDef
+import korlibs.kbox2d.Manifold
+import korlibs.kbox2d.RevoluteJointDef
+import korlibs.kbox2d.World
+import korlibs.kbox2d.WorldManifold
+import korlibs.korge.Korge
+import korlibs.korge.input.onDown
+import korlibs.korge.input.onUp
+import korlibs.korge.scene.Scene
+import korlibs.korge.scene.sceneContainer
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.View
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.circle
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.line
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.vectorPath
+import korlibs.korge.view.xy
+import korlibs.math.geom.Point
+import korlibs.math.geom.Rectangle
+import korlibs.math.geom.Size
+import korlibs.math.geom.Vector2D
+import korlibs.math.geom.degrees
+import korlibs.time.milliseconds
+import korlibs.time.seconds
+import kotlinx.coroutines.delay
+import korlibs.korge.view.launchImmediately
+import kotlin.random.Random
 
 suspend fun main() =
     Korge(windowSize = Size(1280, 720), backgroundColor = Colors["#0a0a14"]) {
@@ -18,7 +47,7 @@ suspend fun main() =
     }
 
 class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: GameScene) {
-    val PPM = gameScene.PPM
+    val ppm = gameScene.ppm
     val head: Body
     val tail: Body
     val segments = mutableListOf<Body>()
@@ -29,12 +58,12 @@ class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: Ga
         head = world.createBody(
             BodyDef(
                 type = BodyType.DYNAMIC,
-                position = Vector2D(640 / PPM, 360 / PPM),
+                position = Vector2D(640 / ppm, 360 / ppm),
                 linearDamping = 4.0f,
                 angularDamping = 3.0f
             )
         )
-        head.createFixture(FixtureDef(shape = BoxShape(32f / 2 / PPM, 32f / 2 / PPM), density = 5.0f))
+        head.createFixture(FixtureDef(shape = BoxShape(32f / 2 / ppm, 32f / 2 / ppm), density = 5.0f))
         val headView = with(gameScene) { scene.createSnakeHead() }
         segmentViews[head] = headView
 
@@ -42,12 +71,12 @@ class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: Ga
         tail = world.createBody(
             BodyDef(
                 type = BodyType.DYNAMIC,
-                position = Vector2D(640 / PPM, (360 + 20) / PPM), // 24-4=20 for 4px overlap
+                position = Vector2D(640 / ppm, (360 + 20) / ppm), // 24-4=20 for 4px overlap
                 linearDamping = 4.0f,
                 angularDamping = 3.0f
             )
         )
-        tail.createFixture(FixtureDef(shape = BoxShape(24f / 2 / PPM, 24f / 2 / PPM), density = 1.0f))
+        tail.createFixture(FixtureDef(shape = BoxShape(24f / 2 / ppm, 24f / 2 / ppm), density = 1.0f))
         val tailView = with(gameScene) { scene.createSnakeTail() }
         segmentViews[tail] = tailView
 
@@ -56,8 +85,8 @@ class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: Ga
             RevoluteJointDef(
                 bodyA = head,
                 bodyB = tail,
-                localAnchorA = Vector2D(0, 12 / PPM), // 16-4=12 for 4px overlap
-                localAnchorB = Vector2D(0, -12 / PPM),
+                localAnchorA = Vector2D(0, 12 / ppm), // 16-4=12 for 4px overlap
+                localAnchorB = Vector2D(0, -12 / ppm),
                 enableLimit = true,
                 lowerAngle = (-45).degrees,
                 upperAngle = 45.degrees
@@ -71,7 +100,7 @@ class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: Ga
 
     private fun updateViews() {
         for ((body, view) in segmentViews) {
-            view.xy(body.position.x * PPM, body.position.y * PPM)
+            view.xy(body.position.x * ppm, body.position.y * ppm)
             view.rotation = body.angle.radians.radians
             view.zIndex = view.y
         }
@@ -84,7 +113,7 @@ class MechanicalSnake(val scene: SContainer, val world: World, val gameScene: Ga
 }
 
 class GameScene : Scene() {
-    val PPM = 30f
+    val ppm = 30f
 
     fun SContainer.createIndustrialWall(rect: Rectangle, world: World): View = container {
         xy(rect.x, rect.y)
@@ -92,10 +121,10 @@ class GameScene : Scene() {
         val wallBody = world.createBody(
             BodyDef(
                 type = BodyType.STATIC,
-                position = Vector2D((rect.x + rect.width / 2) / PPM, (rect.y + rect.height / 2) / PPM)
+                position = Vector2D((rect.x + rect.width / 2) / ppm, (rect.y + rect.height / 2) / ppm)
             )
         )
-        wallBody.createFixture(FixtureDef(shape = BoxShape(rect.width / 2 / PPM, rect.height / 2 / PPM)))
+        wallBody.createFixture(FixtureDef(shape = BoxShape(rect.width / 2 / ppm, rect.height / 2 / ppm)))
         wallBody.setUserData("wall")
 
         // Visuals
@@ -110,7 +139,7 @@ class GameScene : Scene() {
         val gunmetal = Colors["#2A2C31"]
         val cyan = Colors["#00F0FF"]
         // Main head block
-        roundRect(Size(32, 32), RectCorners(4f), fill = gunmetal)
+        roundRect(Size(32, 32), korlibs.math.geom.RectCorners(4f), fill = gunmetal)
         // Visor
         solidRect(24, 4, cyan).xy(4, 8)
         // Glowing effect (PointLight simulation)
@@ -123,7 +152,6 @@ class GameScene : Scene() {
     fun SContainer.createSnakeBody(): View = container {
         val gunmetal = Colors["#2A2C31"]
         val yellow = Colors["#FFD700"]
-        val black = Colors["#000000"]
 
         // Background
         solidRect(24, 24, gunmetal)
@@ -170,15 +198,33 @@ class GameScene : Scene() {
         val darkGrey = Colors["#333333"]
         val neonGreen = Colors["#39FF14"]
 
-        roundRect(Size(20, 28), RectCorners(2f), fill = darkGrey)
+        roundRect(Size(20, 28), korlibs.math.geom.RectCorners(2f), fill = darkGrey)
         solidRect(12, 20, neonGreen).xy(4, 4).alpha(0.8)
     }
 
+    fun SContainer.createSparks(pos: Point) {
+        val sparkCount = 10
+        for (i in 0 until sparkCount) {
+            val spark = circle(1.0 + Random.nextDouble(2.0), fill = Colors.ORANGE).xy(pos)
+            val vx = (Random.nextDouble() - 0.5) * 200.0
+            val vy = (Random.nextDouble() - 0.5) * 200.0
+            var life = 0.5
+            spark.addUpdater {
+                val dt = it.seconds
+                this.x += vx * dt
+                this.y += vy * dt
+                life -= dt
+                this.alpha = (life / 0.5).coerceIn(0.0, 1.0)
+                if (life <= 0) this.removeFromParent()
+            }
+        }
+    }
+
     override suspend fun SContainer.sceneMain() {
-        // DropShadowFilter is available in KorGE, but sometimes it might be in korlibs-image or korlibs-korge-view
-        // We'll use a container with a filter if possible, or just skip if it causes issues.
-        // For now, let's assume it works.
-        // this.filter = korlibs.korge.view.filter.DropShadowFilter()
+        // Apply DropShadowFilter to the scene container
+        this.filter = korlibs.korge.view.filter.DropShadowFilter(
+            shadowColor = Colors.BLACK.withAd(0.5)
+        )
 
         val world = World(Vector2D(0, 0))
 
@@ -192,12 +238,18 @@ class GameScene : Scene() {
                     val worldManifold = WorldManifold()
                     contact.getWorldManifold(worldManifold)
                     val point = worldManifold.points[0]
-                    createSparks(point * PPM)
+                    createSparks(point * ppm)
                 }
             }
-            override fun endContact(contact: Contact) {}
-            override fun preSolve(contact: Contact, oldManifold: Manifold) {}
-            override fun postSolve(contact: Contact, impulse: ContactImpulse) {}
+            override fun endContact(contact: Contact) {
+                // No-op for endContact
+            }
+            override fun preSolve(contact: Contact, oldManifold: Manifold) {
+                // No-op for preSolve
+            }
+            override fun postSolve(contact: Contact, impulse: ContactImpulse) {
+                // No-op for postSolve
+            }
         })
 
         // Background
@@ -248,7 +300,7 @@ class GameScene : Scene() {
 
             // Simple collision check for food
             val head = snake.head
-            val headPos = head.position * PPM
+            val headPos = head.position * ppm
             if (Point.distance(headPos, fuelCell.pos) < 30.0) {
                 relocateFuelCell()
                 addBodySegment(world, snake)
@@ -274,7 +326,7 @@ class GameScene : Scene() {
                 isActive = false
             )
         )
-        newSegment.createFixture(FixtureDef(shape = BoxShape(24f / 2 / PPM, 24f / 2 / PPM), density = 1.0f))
+        newSegment.createFixture(FixtureDef(shape = BoxShape(24f / 2 / ppm, 24f / 2 / ppm), density = 1.0f))
         val view = createSnakeBody()
         snake.segmentViews[newSegment] = view
         snake.segments.add(newSegment)
@@ -283,8 +335,8 @@ class GameScene : Scene() {
             RevoluteJointDef(
                 bodyA = parent,
                 bodyB = newSegment,
-                localAnchorA = if (parent == snake.head) Vector2D(0, 12 / PPM) else Vector2D(0, 12 / PPM),
-                localAnchorB = Vector2D(0, -12 / PPM),
+                localAnchorA = if (parent == snake.head) Vector2D(0, 12 / ppm) else Vector2D(0, 12 / ppm),
+                localAnchorB = Vector2D(0, -12 / ppm),
                 enableLimit = true,
                 lowerAngle = (-45).degrees,
                 upperAngle = 45.degrees
@@ -295,8 +347,8 @@ class GameScene : Scene() {
             RevoluteJointDef(
                 bodyA = newSegment,
                 bodyB = snake.tail,
-                localAnchorA = Vector2D(0, 12 / PPM),
-                localAnchorB = Vector2D(0, -12 / PPM),
+                localAnchorA = Vector2D(0, 12 / ppm),
+                localAnchorB = Vector2D(0, -12 / ppm),
                 enableLimit = true,
                 lowerAngle = (-45).degrees,
                 upperAngle = 45.degrees

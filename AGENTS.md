@@ -13,6 +13,7 @@ The game uses the **KorGE Game Engine** for the game loop and rendering. (Physic
 - **KorGE Version**: 5.4.0
 - **JVM Target**: 1.8. This is a critical requirement for Android/Kotlin Multiplatform compatibility in this project.
 - **Dependency Management**: Standard Android/Kotlin plugins are managed to avoid conflicts with KorGE's multiplatform task generation.
+- **Code Style**: **Do NOT use wildcard imports**. Always use explicit, fully qualified imports to ensure clarity and avoid CI linting failures (Detekt `WildcardImport` rule).
 
 ## 3. Implementation Details
 

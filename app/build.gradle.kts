@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     // alias(libs.plugins.kotlin.android)
-    // alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.korge)
     alias(libs.plugins.jlleitschuh.ktlint)
     alias(libs.plugins.io.gitlab.arturbosch.detekt)
@@ -71,7 +71,7 @@ android {
     //    jvmTarget = "17"
     // }
     buildFeatures {
-        compose = false
+        compose = true
     }
     sourceSets {
         getByName("main") {
