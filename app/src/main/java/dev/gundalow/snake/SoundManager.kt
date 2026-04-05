@@ -3,8 +3,10 @@ package dev.gundalow.snake
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
+import android.util.Log
 
 class SoundManager(context: Context) {
+    private val tag = "SoundManager"
     private val soundPool: SoundPool
     private val soundMap = mutableMapOf<String, Int>()
 
@@ -43,7 +45,7 @@ class SoundManager(context: Context) {
             val soundId = soundPool.load(assetFileDescriptor, priority)
             soundMap[key] = soundId
         } catch (e: Exception) {
-            // Log error
+            Log.e(tag, "Error loading sound $assetPath", e)
         }
     }
 

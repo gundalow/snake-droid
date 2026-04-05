@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.ArrayDeque
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -19,10 +20,9 @@ class SnakeGameEngine {
     }
 
     private var currentDirection = Direction.NORTH
-    private var nextRequestedDirection: Direction? = null
-    private var history = mutableListOf<Offset>()
+    private var directionQueue = ArrayDeque<Direction>()
+    private var history = ArrayDeque<Offset>()
     private var distanceTraveledSinceLastHistoryPoint = 0f
-    private var accumulatedTime = 0f
     private var invulnerabilityTimer = 0f
     private var ufoTimer = 0f
     private var stomperTimer = 0f
@@ -44,11 +44,10 @@ class SnakeGameEngine {
                 snakeDirection = Direction.NORTH,
             )
         currentDirection = Direction.NORTH
-        nextRequestedDirection = null
+        directionQueue.clear()
         history.clear()
         history.add(Offset(0f, 0f))
         distanceTraveledSinceLastHistoryPoint = 0f
-        accumulatedTime = 0f
         invulnerabilityTimer = GameConstants.INVULNERABILITY_TIME
         ufoTimer = GameConstants.UFO_SPAWN_INTERVAL
         stomperTimer = GameConstants.STOMPER_INTERVAL
@@ -62,16 +61,20 @@ class SnakeGameEngine {
     }
 
     fun onDirectionRequest(direction: Direction) {
-        if (!currentDirection.isOpposite(direction)) {
-            nextRequestedDirection = direction
+        val lastInQueue = directionQueue.peekLast() ?: currentDirection
+        if (!lastInQueue.isOpposite(direction) && lastInQueue != direction) {
+            if (directionQueue.size < 2) { // Limit queue size
+                directionQueue.addLast(direction)
+            }
         }
     }
 
     fun update(deltaTimeSeconds: Float) {
         if (!_gameState.value.isPlaying || _gameState.value.isGameOver || _gameState.value.isPaused) return
-        if (handleInvulnerabilityAndBurp(deltaTimeSeconds)) return
 
         updateHazards(deltaTimeSeconds)
+
+        if (handleInvulnerabilityAndBurp(deltaTimeSeconds)) return
 
         val moveSpeed = calculateMoveSpeed()
         var remainingDistance = moveSpeed * deltaTimeSeconds
@@ -117,12 +120,12 @@ class SnakeGameEngine {
     }
 
     private fun calculateNextGridBoundary(pos: Offset): Float {
-        val eps = GameConstants.GRID_BOUNDARY_EPSILON
+        val margin = 1e-4f
         return when (currentDirection) {
-            Direction.NORTH -> floor(pos.y - eps)
-            Direction.SOUTH -> ceil(pos.y + eps)
-            Direction.EAST -> ceil(pos.x + eps)
-            Direction.WEST -> floor(pos.x - eps)
+            Direction.NORTH -> floor(pos.y - margin)
+            Direction.SOUTH -> ceil(pos.y + margin)
+            Direction.EAST -> ceil(pos.x + margin)
+            Direction.WEST -> floor(pos.x - margin)
         }
     }
 
@@ -142,14 +145,20 @@ class SnakeGameEngine {
         step: Float,
         pos: Offset,
     ) {
+        val lastPos = history.peekFirst() ?: pos
         distanceTraveledSinceLastHistoryPoint += step
-        if (distanceTraveledSinceLastHistoryPoint >= GameConstants.HISTORY_RESOLUTION) {
-            history.add(0, pos)
+        while (distanceTraveledSinceLastHistoryPoint >= GameConstants.HISTORY_RESOLUTION) {
+            val ratio = (GameConstants.HISTORY_RESOLUTION - (distanceTraveledSinceLastHistoryPoint - step)) / step
+            val interpolatedPos = lastPos + (pos - lastPos) * ratio
+            history.addFirst(interpolatedPos)
             distanceTraveledSinceLastHistoryPoint -= GameConstants.HISTORY_RESOLUTION
+
             val maxHistory =
                 GameConstants.SEGMENT_SPACING *
                     (_gameState.value.score + GameConstants.INITIAL_HISTORY_SIZE)
-            if (history.size > maxHistory) history.removeAt(history.size - 1)
+            while (history.size > maxHistory) {
+                history.removeLast()
+            }
         }
     }
 
@@ -165,9 +174,10 @@ class SnakeGameEngine {
                     ?: pos.y.roundToInt().toFloat(),
             )
         _gameState.update { it.copy(snakeHead = snappedPos) }
-        nextRequestedDirection?.let {
-            currentDirection = it
-            nextRequestedDirection = null
+
+        if (directionQueue.isNotEmpty()) {
+            val nextDir = directionQueue.removeFirst()
+            currentDirection = nextDir
             _gameState.update { s -> s.copy(snakeDirection = currentDirection) }
         }
     }
@@ -175,10 +185,11 @@ class SnakeGameEngine {
     private fun updateSegments() {
         val score = _gameState.value.score
         val newSegments = mutableListOf<Offset>()
+        val historyList = history.toList()
         for (i in 1..score) {
             val historyIndex = i * GameConstants.SEGMENT_SPACING
-            if (historyIndex < history.size) {
-                newSegments.add(history[historyIndex])
+            if (historyIndex < historyList.size) {
+                newSegments.add(historyList[historyIndex])
             }
         }
         _gameState.update { it.copy(bodySegments = newSegments) }
@@ -202,11 +213,11 @@ class SnakeGameEngine {
         var newFood = Offset(0f, 0f)
         var attempts = 0
         while (!valid && attempts < GameConstants.FOOD_SPAWN_RETRY_LIMIT) {
-            val wallDistInt = GameConstants.WALL_DISTANCE.toInt()
+            val wallLimit = floor(GameConstants.WALL_DISTANCE).toInt()
             newFood =
                 Offset(
-                    Random.nextInt(-wallDistInt + 1, wallDistInt - 1).toFloat(),
-                    Random.nextInt(-wallDistInt + 1, wallDistInt - 1).toFloat(),
+                    Random.nextInt(-wallLimit, wallLimit + 1).toFloat(),
+                    Random.nextInt(-wallLimit, wallLimit + 1).toFloat(),
                 )
             valid = isFoodPositionValid(newFood)
             attempts++
@@ -392,6 +403,14 @@ class SnakeGameEngine {
     private fun triggerStomp() {
         onStomp?.invoke()
         _gameState.update { it.copy(screenShake = 1.0f) }
+
+        // Check if snake head is within stomp radius (centered at (0,0))
+        val head = _gameState.value.snakeHead
+        if (head.getDistance() < GameConstants.STOMPER_FOOT_SIZE) {
+            _gameState.update { it.copy(isGameOver = true) }
+            onGameOver?.invoke()
+        }
+
         relocateFood()
     }
 
@@ -401,12 +420,12 @@ class SnakeGameEngine {
         var valid = false
         var newFood = Offset(0f, 0f)
         var attempts = 0
-        val wallDistInt = GameConstants.WALL_DISTANCE.toInt()
         while (!valid && attempts < GameConstants.FOOD_SPAWN_RETRY_LIMIT) {
+            val wallLimit = floor(GameConstants.WALL_DISTANCE).toInt()
             newFood =
                 Offset(
-                    Random.nextInt(-wallDistInt + 1, wallDistInt - 1).toFloat(),
-                    Random.nextInt(-wallDistInt + 1, wallDistInt - 1).toFloat(),
+                    Random.nextInt(-wallLimit, wallLimit + 1).toFloat(),
+                    Random.nextInt(-wallLimit, wallLimit + 1).toFloat(),
                 )
             valid = isFoodPositionValid(newFood)
             attempts++
