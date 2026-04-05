@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.korge) apply false
     alias(libs.plugins.jlleitschuh.ktlint) apply false
     alias(libs.plugins.io.gitlab.arturbosch.detekt) apply false
 }
