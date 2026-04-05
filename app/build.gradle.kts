@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.korge)
     alias(libs.plugins.jlleitschuh.ktlint)
     alias(libs.plugins.io.gitlab.arturbosch.detekt)
 }
@@ -9,6 +10,18 @@ plugins {
 detekt {
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
+}
+
+korge {
+    id = "dev.gundalow.snake"
+    name = "Snake"
+    androidSdk(compileSdk = 35, minSdk = 26, targetSdk = 35)
+    targetAndroid()
+    jvmMainClassName = "dev.gundalow.snake.MainKt"
+}
+
+kotlin {
+    jvmToolchain(21)
 }
 
 android {
@@ -37,14 +50,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // kotlinOptions {
+    //    jvmTarget = "17"
+    // }
     buildFeatures {
         compose = true
+    }
+    sourceSets {
+        getByName("main") {
+            manifest.srcFile("src/main/AndroidManifest.xml")
+            res.srcDirs("src/main/res")
+            assets.srcDirs("src/main/assets")
+        }
     }
 }
 
@@ -59,6 +79,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation(libs.kbox2d.android)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
