@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -102,16 +103,19 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
         modifier =
             modifier
                 .fillMaxSize()
-                .graphicsLayer {
-                    val mag = GameConstants.SCREEN_SHAKE_MAGNITUDE
-                    translationX = (Random.nextFloat() - 0.5f) * gameState.screenShake * mag
-                    translationY = (Random.nextFloat() - 0.5f) * gameState.screenShake * mag
-                }
                 .background(Color(0xFF1B5E20))
                 .handleSwipes(engine),
         contentAlignment = Alignment.Center,
     ) {
-        GameCanvas(gameState)
+        GameCanvas(
+            state = gameState,
+            modifier =
+                Modifier.graphicsLayer {
+                    val mag = GameConstants.SCREEN_SHAKE_MAGNITUDE
+                    translationX = (Random.nextFloat() - 0.5f) * gameState.screenShake * mag
+                    translationY = (Random.nextFloat() - 0.5f) * gameState.screenShake * mag
+                },
+        )
         OverlayUi(gameState, lastAchievement)
 
         if (showNameEntry) {
@@ -152,17 +156,17 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
 @Composable
 private fun GameLoop(engine: SnakeGameEngine) {
     LaunchedEffect(Unit) {
-        var lastTime = System.currentTimeMillis()
+        var lastFrameTime = withFrameNanos { it }
         while (true) {
-            val currentTime = System.currentTimeMillis()
-            val deltaTime = (currentTime - lastTime) / 1000f
-            lastTime = currentTime
+            withFrameNanos { frameTimeNanos ->
+                val deltaTimeSeconds = (frameTimeNanos - lastFrameTime) / 1_000_000_000f
+                lastFrameTime = frameTimeNanos
 
-            val state = engine.gameState.value
-            if (state.isPlaying && !state.isGameOver && !state.isPaused) {
-                engine.update(deltaTime)
+                val state = engine.gameState.value
+                if (state.isPlaying && !state.isGameOver && !state.isPaused) {
+                    engine.update(deltaTimeSeconds)
+                }
             }
-            delay(GameConstants.FPS_60_DELAY)
         }
     }
 }
@@ -204,8 +208,11 @@ private fun Modifier.handleSwipes(engine: SnakeGameEngine): Modifier =
     }
 
 @Composable
-private fun GameCanvas(state: GameState) {
-    Canvas(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+private fun GameCanvas(
+    state: GameState,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier.fillMaxSize().padding(16.dp)) {
         val canvasSize = size
         val boardScale = minOf(canvasSize.width, canvasSize.height) / (GameConstants.BOARD_SIZE + 1f)
         val center = Offset(canvasSize.width / 2f, canvasSize.height / 2f)
