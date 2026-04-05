@@ -18,15 +18,16 @@ class MegaMelonTest {
     @Test
     fun `test mega food nibbling requires multiple entries`() {
         // Setup initial state with a Mega-Melon at (5, 5)
-        val initialMegaState = GameState(
-            snakeHead = Offset(0f, 0f),
-            foodPosition = Offset(5f, 5f),
-            foodType = FoodType.MEGA,
-            megaBitesLeft = 3,
-            score = 0,
-            isSlowedDown = false,
-            isInsideMegaFood = false
-        )
+        val initialMegaState =
+            GameState(
+                snakeHead = Offset(0f, 0f),
+                foodPosition = Offset(5f, 5f),
+                foodType = FoodType.MEGA,
+                megaBitesLeft = 3,
+                score = 0,
+                isSlowedDown = false,
+                isInsideMegaFood = false,
+            )
         engine.debugSetGameState(initialMegaState)
 
         // 1. Move into the food range
