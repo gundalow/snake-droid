@@ -97,4 +97,5 @@ data class GameState(
     val achievement: String? = null,
     val foodCount: Int = 0,
     val screenShake: Float = 0f,
+    val isInsideMegaFood: Boolean = false,
 )
