@@ -13,6 +13,7 @@ class MegaMelonTest {
     @Before
     fun setup() {
         engine = SnakeGameEngine()
+        engine.resetGame(startPlaying = true)
     }
 
     @Test
@@ -20,6 +21,7 @@ class MegaMelonTest {
         // Setup initial state with a Mega-Melon at (5, 5)
         val initialMegaState =
             GameState(
+                isPlaying = true,
                 snakeHead = Offset(0f, 0f),
                 foodPosition = Offset(5f, 5f),
                 foodType = FoodType.MEGA,

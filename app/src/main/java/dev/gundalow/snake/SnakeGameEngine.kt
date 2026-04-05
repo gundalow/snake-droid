@@ -30,11 +30,19 @@ class SnakeGameEngine {
     private var burpDelayTimer = 0f
 
     init {
-        resetGame()
+        resetGame(startPlaying = false)
     }
 
-    fun resetGame(playerName: String = "Snake") {
-        _gameState.value = GameState(playerName = playerName)
+    fun resetGame(
+        playerName: String = "Snake",
+        startPlaying: Boolean = false,
+    ) {
+        _gameState.value =
+            GameState(
+                playerName = playerName,
+                isPlaying = startPlaying,
+                snakeDirection = Direction.NORTH,
+            )
         currentDirection = Direction.NORTH
         nextRequestedDirection = null
         history.clear()
@@ -46,7 +54,11 @@ class SnakeGameEngine {
         stomperTimer = GameConstants.STOMPER_INTERVAL
         stomperActiveTimer = 0f
         burpDelayTimer = 0f
-        spawnFood()
+        spawnFood(isInitial = true)
+    }
+
+    fun setPaused(paused: Boolean) {
+        _gameState.update { it.copy(isPaused = paused) }
     }
 
     fun onDirectionRequest(direction: Direction) {
@@ -56,7 +68,7 @@ class SnakeGameEngine {
     }
 
     fun update(deltaTimeSeconds: Float) {
-        if (_gameState.value.isGameOver) return
+        if (!_gameState.value.isPlaying || _gameState.value.isGameOver || _gameState.value.isPaused) return
         if (handleInvulnerabilityAndBurp(deltaTimeSeconds)) return
 
         updateHazards(deltaTimeSeconds)
@@ -156,6 +168,7 @@ class SnakeGameEngine {
         nextRequestedDirection?.let {
             currentDirection = it
             nextRequestedDirection = null
+            _gameState.update { s -> s.copy(snakeDirection = currentDirection) }
         }
     }
 
@@ -171,7 +184,19 @@ class SnakeGameEngine {
         _gameState.update { it.copy(bodySegments = newSegments) }
     }
 
-    private fun spawnFood() {
+    private fun spawnFood(isInitial: Boolean = false) {
+        if (isInitial) {
+            _gameState.update {
+                it.copy(
+                    foodPosition = Offset(0f, -5f),
+                    foodType = FoodType.NORMAL,
+                    megaBitesLeft = 0,
+                )
+            }
+            onFoodSpawned?.invoke()
+            return
+        }
+
         val nextIsMega = (_gameState.value.foodCount + 1) % GameConstants.MEGA_FOOD_INTERVAL == 0
         var valid = false
         var newFood = Offset(0f, 0f)
