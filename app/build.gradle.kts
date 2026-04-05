@@ -12,11 +12,11 @@ detekt {
 }
 
 android {
-    namespace = "com.example.app"
+    namespace = "dev.gundalow.snake"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.app"
+        applicationId = "dev.gundalow.snake"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
