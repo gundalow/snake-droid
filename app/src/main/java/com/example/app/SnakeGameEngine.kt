@@ -14,6 +14,10 @@ class SnakeGameEngine {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
+    fun debugSetGameState(state: GameState) {
+        _gameState.value = state
+    }
+
     private var currentDirection = Direction.NORTH
     private var nextRequestedDirection: Direction? = null
     private var history = mutableListOf<Offset>()
@@ -221,8 +225,20 @@ class SnakeGameEngine {
         }
 
         val foodPos = _gameState.value.foodPosition
-        if ((head - foodPos).getDistance() < GameConstants.COLLISION_DIST_FOOD) {
-            handleFoodCollision()
+        val isInFoodRange = (head - foodPos).getDistance() < GameConstants.COLLISION_DIST_FOOD
+        if (isInFoodRange) {
+            if (_gameState.value.foodType == FoodType.MEGA) {
+                if (!_gameState.value.isInsideMegaFood) {
+                    handleFoodCollision()
+                    _gameState.update { it.copy(isInsideMegaFood = true) }
+                }
+            } else {
+                handleFoodCollision()
+            }
+        } else {
+            if (_gameState.value.isInsideMegaFood) {
+                _gameState.update { it.copy(isInsideMegaFood = false) }
+            }
         }
 
         if (invulnerabilityTimer <= 0) {
