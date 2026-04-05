@@ -98,4 +98,6 @@ data class GameState(
     val foodCount: Int = 0,
     val screenShake: Float = 0f,
     val isInsideMegaFood: Boolean = false,
+    val isPlaying: Boolean = false,
+    val isPaused: Boolean = false,
 )

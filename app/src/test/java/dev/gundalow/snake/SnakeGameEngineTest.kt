@@ -13,6 +13,7 @@ class SnakeGameEngineTest {
     @Before
     fun setup() {
         engine = SnakeGameEngine()
+        engine.resetGame(startPlaying = true)
     }
 
     @Test
@@ -22,11 +23,12 @@ class SnakeGameEngineTest {
         assertEquals(0, state.score)
         assertFalse(state.isGameOver)
         assertEquals(GameConstants.INITIAL_MOVE_SPEED, state.moveSpeed)
+        assertTrue(state.isPlaying)
     }
 
     @Test
     fun `test movement and grid snapping`() {
-        // Move NORTH for 0.5 seconds at speed 5.0 = 2.5 units
+        // Move NORTH for 0.1 seconds at speed 5.0 = 0.5 units
         // It should stop at the first boundary (-1.0) and then the second (-2.0)
         // But since we haven't changed direction, it just keeps going.
         engine.update(0.1f) // 0.5 units

@@ -121,14 +121,20 @@ fun SnakeGameView(modifier: Modifier = Modifier) {
                 onStart = { name ->
                     playerName = name
                     showNameEntry = false
-                    engine.resetGame(name)
+                    engine.resetGame(name, startPlaying = true)
                 },
-                onShowAbout = { showAbout = true },
+                onShowAbout = {
+                    showAbout = true
+                    engine.setPaused(true)
+                },
             )
         }
 
         if (showAbout) {
-            AboutScreen(onClose = { showAbout = false })
+            AboutScreen(onClose = {
+                showAbout = false
+                engine.setPaused(false)
+            })
         }
 
         if (gameState.isGameOver) {
@@ -148,13 +154,13 @@ private fun GameLoop(engine: SnakeGameEngine) {
     LaunchedEffect(Unit) {
         var lastTime = System.currentTimeMillis()
         while (true) {
-            if (!engine.gameState.value.isGameOver) {
-                val currentTime = System.currentTimeMillis()
-                val deltaTime = (currentTime - lastTime) / 1000f
+            val currentTime = System.currentTimeMillis()
+            val deltaTime = (currentTime - lastTime) / 1000f
+            lastTime = currentTime
+
+            val state = engine.gameState.value
+            if (state.isPlaying && !state.isGameOver && !state.isPaused) {
                 engine.update(deltaTime)
-                lastTime = currentTime
-            } else {
-                lastTime = System.currentTimeMillis()
             }
             delay(GameConstants.FPS_60_DELAY)
         }
@@ -348,6 +354,7 @@ private fun NameEntryScreen(
     onShowAbout: () -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
+    val isNameValid = name.isNotBlank()
     val scores = remember { leaderboardManager.getTopScores() }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black.copy(alpha = GameConstants.NAME_ENTRY_ALPHA)) {
@@ -375,7 +382,10 @@ private fun NameEntryScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { onStart(name) }) {
+            Button(
+                onClick = { if (isNameValid) onStart(name) },
+                enabled = isNameValid,
+            ) {
                 Text("START GAME")
             }
             Spacer(modifier = Modifier.height(8.dp))
