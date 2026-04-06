@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://ctq1x2y3z4w5v"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(64, 32)
+
+[node name="Obstacle" type="StaticBody2D"]
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(0.666667, 0.666667, 0.666667, 1)
+polygon = PackedVector2Array(-32, -128, 32, -128, 32, 0, -32, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -16)
+shape = SubResource("RectangleShape2D_1")
